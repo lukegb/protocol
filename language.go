@@ -70,6 +70,20 @@ type CompletionList struct {
 	Items []CompletionItem `json:"items"`
 }
 
+// InsertReplaceEdit represents a special text edit to provide a insert or a replace operation.
+//
+// @since 3.16.0 - Proposed state.
+type InsertReplaceEdit struct {
+	// NewText is the string to be inserted.
+	NewText string `json:"newText"`
+
+	// Insert is the range if the insert is requested
+	Insert Range `json:"insert"`
+
+	// Replace is the range if the replace is requested.
+	Replace Range `json:"replace"`
+}
+
 // InsertTextFormat defines whether the insert text in a completion item should be interpreted as
 // plain text or a snippet.
 type InsertTextFormat float64
@@ -301,6 +315,12 @@ func (k CompletionItemKind) String() string {
 		return strconv.FormatInt(int64(k), 10)
 	}
 }
+
+// CompletionItemTag completion item tags are extra annotations that tweak the rendering of a completion
+// item.
+//
+// @since 3.15.0.
+type CompletionItemTag float64
 
 // CompletionRegistrationOptions CompletionRegistration options.
 type CompletionRegistrationOptions struct {
@@ -579,6 +599,11 @@ func (k SymbolKind) String() string {
 	}
 }
 
+// SymbolTag are extra annotations that tweak the rendering of a symbol.
+//
+// @since 3.15
+type SymbolTag float64
+
 // DocumentSymbol represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document symbols can be
 // hierarchical and they have two ranges: one that encloses its definition and one that points to its most interesting range,
 // e.g. the range of an identifier.
@@ -733,6 +758,15 @@ type CodeAction struct {
 	// Diagnostics is the diagnostics that this code action resolves.
 	Diagnostics []Diagnostic `json:"diagnostics,omitempty"`
 
+	// IsPreferred marks this as a preferred action. Preferred actions are used by the `auto fix` command and can be targeted
+	// by keybindings.
+	//
+	// A quick fix should be marked preferred if it properly addresses the underlying error.
+	// A refactoring should be marked preferred if it is the most reasonable choice of actions to take.
+	//
+	// @since 3.15.0
+	IsPreferred bool `json:"isPreferred,omitempty"`
+
 	// Edit is the workspace edit this code action performs.
 	Edit *WorkspaceEdit `json:"edit,omitempty"`
 
@@ -793,6 +827,15 @@ type DocumentLink struct {
 
 	// Target is the uri this link points to. If missing a resolve request is sent later.
 	Target uri.URI `json:"target,omitempty"`
+
+	// Tooltip is the tooltip text when you hover over this link.
+	//
+	// If a tooltip is provided, is will be displayed in a string that includes instructions on how to
+	// trigger the link, such as `{0} (ctrl + click)`. The specific instructions vary depending on OS,
+	// user settings, and localization.
+	//
+	// @since 3.15.0.
+	Tooltip string `json:"tooltip,omitempty"`
 
 	// Data is a data entry field that is preserved on a document link between a
 	// DocumentLinkRequest and a DocumentLinkResolveRequest.
@@ -873,6 +916,21 @@ type FormattingOptions struct {
 
 	// TabSize size of a tab in spaces.
 	TabSize float64 `json:"tabSize"`
+
+	// TrimTrailingWhitespace trim trailing whitespaces on a line.
+	//
+	// @since 3.15.0.
+	TrimTrailingWhitespace bool `json:"trimTrailingWhitespace,omitempty"`
+
+	// InsertFinalNewlines insert a newline character at the end of the file if one does not exist.
+	//
+	// @since 3.15.0.
+	InsertFinalNewline bool `json:"insertFinalNewline,omitempty"`
+
+	// TrimFinalNewlines trim all newlines after the final newline at the end of the file.
+	//
+	// @since 3.15.0
+	TrimFinalNewlines bool `json:"trimFinalNewlines,omitempty"`
 }
 
 // DocumentRangeFormattingParams params of Document Range Formatting Request.

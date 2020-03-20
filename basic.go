@@ -95,6 +95,11 @@ type Diagnostic struct {
 	// Message is the diagnostic's message.
 	Message string `json:"message"`
 
+	// Tags is the additional metadata about the diagnostic.
+	//
+	// @since 3.15.0.
+	Tags []DiagnosticTag `json:"tags,omitempty"`
+
 	// RelatedInformation an array of related diagnostic information, e.g. when symbol-names within
 	// a scope collide all definitions can be marked via this property.
 	RelatedInformation []DiagnosticRelatedInformation `json:"relatedInformation,omitempty"`
@@ -128,6 +133,35 @@ func (d DiagnosticSeverity) String() string {
 		return "Information"
 	case SeverityHint:
 		return "Hint"
+	default:
+		return strconv.FormatFloat(float64(d), 'f', -10, 64)
+	}
+}
+
+// DiagnosticTag is the diagnostic tags.
+//
+// @since 3.15.0.
+type DiagnosticTag float64
+
+const (
+	// DiagnosticUnnecessary unused or unnecessary code.
+	//
+	// Clients are allowed to render diagnostics with this tag faded out instead of having an error squiggle.
+	DiagnosticUnnecessary DiagnosticTag = 1
+
+	// DiagnosticDeprecated deprecated or obsolete code.
+	//
+	// Clients are allowed to rendered diagnostics with this tag strike through.
+	DiagnosticDeprecated DiagnosticTag = 2
+)
+
+// String implements fmt.Stringer.
+func (d DiagnosticTag) String() string {
+	switch d {
+	case DiagnosticUnnecessary:
+		return "Unnecessary"
+	case DiagnosticDeprecated:
+		return "Deprecated"
 	default:
 		return strconv.FormatFloat(float64(d), 'f', -10, 64)
 	}

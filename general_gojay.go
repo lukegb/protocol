@@ -1016,6 +1016,60 @@ var (
 	_ gojay.UnmarshalerJSONObject = (*TextDocumentClientCapabilitiesCodeActionKind)(nil)
 )
 
+// DiagnosticTags represents a slice of DiagnosticTag.
+type DiagnosticTags []DiagnosticTag
+
+// compile time check whether the CodeActionKinds implements a gojay.MarshalerJSONArray and gojay.UnmarshalerJSONArray interfaces.
+var (
+	_ gojay.MarshalerJSONArray   = (*DiagnosticTags)(nil)
+	_ gojay.UnmarshalerJSONArray = (*DiagnosticTags)(nil)
+)
+
+// MarshalJSONArray implements gojay.MarshalerJSONArray.
+func (v DiagnosticTags) MarshalJSONArray(enc *gojay.Encoder) {
+	for i := range v {
+		enc.Float64(float64(v[i]))
+	}
+}
+
+// IsNil implements gojay.MarshalerJSONArray.
+func (v DiagnosticTags) IsNil() bool { return len(v) == 0 }
+
+// UnmarshalJSONArray implements gojay.UnmarshalerJSONArray.
+func (v *DiagnosticTags) UnmarshalJSONArray(dec *gojay.Decoder) error {
+	var value DiagnosticTag
+	if err := dec.Float64((*float64)(&value)); err != nil {
+		return err
+	}
+	*v = append(*v, value)
+	return nil
+}
+
+// MarshalJSONObject implements gojay.MarshalerJSONObject.
+func (v *TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport) MarshalJSONObject(enc *gojay.Encoder) {
+	enc.ArrayKey(keyValueSet, (*DiagnosticTags)(&v.ValueSet))
+}
+
+// IsNil returns wether the structure is nil value or not.
+func (v *TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport) IsNil() bool { return v == nil }
+
+// UnmarshalJSONObject implements gojay's UnmarshalerJSONObject.
+func (v *TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport) UnmarshalJSONObject(dec *gojay.Decoder, k string) error {
+	if k == keyValueSet {
+		return dec.Array((*DiagnosticTags)(&v.ValueSet))
+	}
+	return nil
+}
+
+// NKeys returns the number of keys to unmarshal.
+func (v *TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport) NKeys() int { return 1 }
+
+// compile time check whether the TextDocumentClientCapabilitiesCodeActionKind implements a gojay.MarshalerJSONObject and gojay.UnmarshalerJSONObject interfaces.
+var (
+	_ gojay.MarshalerJSONObject   = (*TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport)(nil)
+	_ gojay.UnmarshalerJSONObject = (*TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport)(nil)
+)
+
 // MarshalJSONObject implements gojay.MarshalerJSONObject.
 func (v *TextDocumentClientCapabilitiesCodeLens) MarshalJSONObject(enc *gojay.Encoder) {
 	enc.BoolKeyOmitEmpty(keyDynamicRegistration, v.DynamicRegistration)
@@ -1123,7 +1177,7 @@ var (
 // MarshalJSONObject implements gojay.MarshalerJSONObject.
 func (v *TextDocumentClientCapabilitiesPublishDiagnostics) MarshalJSONObject(enc *gojay.Encoder) {
 	enc.BoolKeyOmitEmpty(keyRelatedInformation, v.RelatedInformation)
-	enc.BoolKeyOmitEmpty(keyTagSupport, v.TagSupport)
+	enc.ObjectKeyOmitEmpty(keyValueSet, v.TagSupport)
 }
 
 // IsNil returns wether the structure is nil value or not.
@@ -1135,7 +1189,7 @@ func (v *TextDocumentClientCapabilitiesPublishDiagnostics) UnmarshalJSONObject(d
 	case keyRelatedInformation:
 		return dec.Bool(&v.RelatedInformation)
 	case keyTagSupport:
-		return dec.Bool(&v.TagSupport)
+		return dec.Object(v.TagSupport)
 	}
 	return nil
 }

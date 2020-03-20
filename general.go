@@ -31,12 +31,28 @@ const (
 	TraceVerbose TraceMode = "verbose"
 )
 
+// ClientInfo information about the client.
+//
+// @since 3.15.0.
+type ClientInfo struct {
+	// Name is the name of the client as defined by the client.
+	Name string `json:"name"`
+
+	// Version is the client's version as defined by the client.
+	Version string `json:"version,omitempty"`
+}
+
 // InitializeParams params of Initialize Request.
 type InitializeParams struct {
 	// ProcessID is the process Id of the parent process that started
 	// the server. Is null if the process has not been started by another process.
 	// If the parent process is not alive then the server should exit (see exit notification) its process.
 	ProcessID float64 `json:"processId"`
+
+	// ClientInfo is the information about the client.
+	//
+	// @since 3.15.0
+	ClientInfo *ClientInfo `json:"clientInfo,omitempty"`
 
 	// RootPath is the rootPath of the workspace. Is null
 	// if no folder is open.
@@ -115,6 +131,19 @@ type WorkspaceClientCapabilitiesSymbolKind struct {
 	ValueSet []SymbolKind `json:"valueSet,omitempty"`
 }
 
+// WorkspaceClientCapabilitiesSymbolTag specific capabilities for the `SymbolTag` in the `workspace/symbol` request.
+type WorkspaceClientCapabilitiesSymbolTag struct {
+	// ValueSet is the symbol kind values the client supports. When this
+	// property exists the client also guarantees that it will
+	// handle values outside its set gracefully and falls back
+	// to a default value when unknown.
+	//
+	// If this property is not present the client only supports
+	// the symbol kinds from `File` to `Array` as defined in
+	// the initial version of the protocol.
+	ValueSet []SymbolTag `json:"valueSet,omitempty"`
+}
+
 // WorkspaceClientCapabilitiesExecuteCommand capabilities specific to the `workspace/executeCommand` request.
 type WorkspaceClientCapabilitiesExecuteCommand struct {
 	// DynamicRegistration Execute command supports dynamic registration.
@@ -186,10 +215,9 @@ type TextDocumentClientCapabilitiesCompletion struct {
 	ContextSupport bool `json:"contextSupport,omitempty"`
 }
 
-// TextDocumentClientCapabilitiesCompletionItemKind specific capabilities for the `CompletionItemKind ` in the `textDocument/completion` request.
+// TextDocumentClientCapabilitiesCompletionItemKind specific capabilities for the `CompletionItemKind` in the `textDocument/completion` request.
 type TextDocumentClientCapabilitiesCompletionItemKind struct {
-	//
-	// The completion item kind values the client supports. When this
+	// ValueSet is the completion item kind values the client supports. When this
 	// property exists the client also guarantees that it will
 	// handle values outside its set gracefully and falls back
 	// to a default value when unknown.
@@ -199,6 +227,17 @@ type TextDocumentClientCapabilitiesCompletionItemKind struct {
 	// the initial version of the protocol.
 	//
 	ValueSet []CompletionItemKind `json:"valueSet,omitempty"`
+}
+
+// TextDocumentClientCapabilitiesCompletionItemTagSupport specific capabilities for the `TagSupport` in the `textDocument/completion` request.
+type TextDocumentClientCapabilitiesCompletionItemTagSupport struct {
+	// ValueSet client supports the tag property on a completion item. Clients supporting
+	// tags have to handle unknown tags gracefully. Clients especially need to
+	// preserve unknown tags when sending a completion item back to the server in
+	// a resolve call.
+	//
+	// @since 3.15.0.
+	ValueSet []CompletionItemTag `json:"valueSet,omitempty"`
 }
 
 // TextDocumentClientCapabilitiesCompletionItem is the client supports the following `CompletionItem` specific
@@ -224,6 +263,14 @@ type TextDocumentClientCapabilitiesCompletionItem struct {
 
 	// PreselectSupport client supports the preselect property on a completion item.
 	PreselectSupport bool `json:"preselectSupport,omitempty"`
+
+	TagSupport *TextDocumentClientCapabilitiesCompletionItemTagSupport `json:"tagSupport,omitempty"`
+
+	// InsertReplaceSupport client support insert replace edit to control different behavior if a
+	// completion item is inserted in the text or should replace text.
+	//
+	// @since 3.16.0 - Proposed state.
+	InsertReplaceSupport bool `json:"insertReplaceSupport,omitempty"`
 }
 
 // TextDocumentClientCapabilitiesHover capabilities specific to the `textDocument/hover`
@@ -288,6 +335,13 @@ type TextDocumentClientCapabilitiesDocumentSymbol struct {
 
 	// HierarchicalDocumentSymbolSupport is the client support hierarchical document symbols.
 	HierarchicalDocumentSymbolSupport bool `json:"hierarchicalDocumentSymbolSupport,omitempty"`
+
+	// TagSupport is the client supports tags on `SymbolInformation`. Tags are supported on
+	// `DocumentSymbol` if `hierarchicalDocumentSymbolSupport` is set tot true.
+	// Clients supporting tags have to handle unknown tags gracefully.
+	//
+	// @since 3.16.0 - Proposed state.
+	TagSupport *WorkspaceClientCapabilitiesSymbolTag `json:"tagSupport,omitempty"`
 }
 
 // TextDocumentClientCapabilitiesFormatting capabilities specific to the `textDocument/formatting`
@@ -399,6 +453,11 @@ type TextDocumentClientCapabilitiesCodeLens struct {
 type TextDocumentClientCapabilitiesDocumentLink struct {
 	// DynamicRegistration whether document link supports dynamic registration.
 	DynamicRegistration bool `json:"dynamicRegistration,omitempty"`
+
+	// TooltipSupport whether the client support the `tooltip` property on `DocumentLink`.
+	//
+	// @since 3.15.0.
+	TooltipSupport bool `json:"tooltipSupport,omitempty"`
 }
 
 // TextDocumentClientCapabilitiesColorProvider capabilities specific to the `textDocument/documentColor` and the
@@ -428,7 +487,26 @@ type TextDocumentClientCapabilitiesPublishDiagnostics struct {
 	RelatedInformation bool `json:"relatedInformation,omitempty"`
 
 	// TagSupport client supports the tag property to provide meta data about a diagnostic.
-	TagSupport bool `json:"tagSupport,omitempty"`
+	// Clients supporting tags have to handle unknown tags gracefully.
+	//
+	// @since 3.15.0.
+	TagSupport *TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport `json:"tagSupport,omitempty"`
+
+	// VersionSupport whether the client interprets the version property of the
+	// `textDocument/publishDiagnostics` notification`s parameter.
+	//
+	// @since 3.15.0.
+	VersionSupport bool `json:"versionSupport,omitempty"`
+
+	// ComplexDiagnosticCodeSupport clients support complex diagnostic codes (e.g. code and target URI).
+	//
+	// @since 3.16.0 - Proposed state.
+	ComplexDiagnosticCodeSupport bool `json:"complexDiagnosticCodeSupport,omitempty"`
+}
+
+type TextDocumentClientCapabilitiesPublishDiagnosticsTagSupport struct {
+	// ValueSet is the tags supported by the client.
+	ValueSet []DiagnosticTag `json:"valueSet"`
 }
 
 // TextDocumentClientCapabilitiesFoldingRange capabilities specific to `textDocument/foldingRange` requests.
@@ -548,6 +626,8 @@ type ClientCapabilities struct {
 	// TextDocument specific client capabilities.
 	TextDocument *TextDocumentClientCapabilities `json:"textDocument,omitempty"`
 
+	Window *WindowClientCapabilities `json:"window,omitempty"`
+
 	// Experimental client capabilities.
 	Experimental interface{} `json:"experimental,omitempty"`
 }
@@ -556,6 +636,22 @@ type ClientCapabilities struct {
 type InitializeResult struct {
 	// Capabilities is the capabilities the language server provides.
 	Capabilities ServerCapabilities `json:"capabilities"`
+
+	// ServerInfo Information about the server.
+	//
+	// @since 3.15.0.
+	ServerInfo *ServerInfo `json:"serverInfo,omitempty"`
+}
+
+// ServerInfo Information about the server.
+//
+// @since 3.15.0.
+type ServerInfo struct {
+	// Name is the name of the server as defined by the server.
+	Name string `json:"name"`
+
+	// Version is the server's version as defined by the server.
+	Version string `json:"version,omitempty"`
 }
 
 // InitializeError known error codes for an `InitializeError`.
