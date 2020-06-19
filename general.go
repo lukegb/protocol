@@ -537,6 +537,15 @@ type TextDocumentClientCapabilities struct {
 	SelectionRange *TextDocumentClientCapabilitiesSelectionRange `json:"selectionRange,omitempty"`
 }
 
+// WindowClientCapabilities Window specific client capabilities.
+type WindowClientCapabilities struct {
+	// WorkDoneProgress Whether client supports handling progress notifications. If set servers are allowed to
+	// report in `workDoneProgress` property in the request specific server capabilities.
+	//
+	// Since 3.15.0
+	WorkDoneProgress bool `json:"workDoneProgress,omitempty"`
+}
+
 // ClientCapabilities now define capabilities for dynamic registration, workspace and text document features the client supports.
 // The experimental can be used to pass experimental capabilities under development. For future compatibility a ClientCapabilities object literal can have more properties set than currently defined.
 // Servers receiving a ClientCapabilities object literal with unknown properties should ignore these properties. A missing property should be interpreted as an absence of the capability.
@@ -547,6 +556,9 @@ type ClientCapabilities struct {
 
 	// TextDocument specific client capabilities.
 	TextDocument *TextDocumentClientCapabilities `json:"textDocument,omitempty"`
+
+	// Window specific client capabilities.
+	Window *WindowClientCapabilities `json:"window,omitempty"`
 
 	// Experimental client capabilities.
 	Experimental interface{} `json:"experimental,omitempty"`
